@@ -84,14 +84,23 @@ func init() {
 }
 
 func RegisterCommonFlags(cmd *cobra.Command) {
+	// 服务端地址
 	cmd.PersistentFlags().StringVarP(&serverAddr, "server_addr", "s", "127.0.0.1:7000", "frp server's address")
+	// 用户 （不确定作用是什么）
 	cmd.PersistentFlags().StringVarP(&user, "user", "u", "", "user")
+	// 传输协议
 	cmd.PersistentFlags().StringVarP(&protocol, "protocol", "p", "tcp", "tcp or kcp or websocket")
+	// 认证密钥
 	cmd.PersistentFlags().StringVarP(&token, "token", "t", "", "auth token")
+	// 日志等级
 	cmd.PersistentFlags().StringVarP(&logLevel, "log_level", "", "info", "log level")
+	// 日志文件
 	cmd.PersistentFlags().StringVarP(&logFile, "log_file", "", "console", "console or file path")
+	// 日志最长记录天数
 	cmd.PersistentFlags().IntVarP(&logMaxDays, "log_max_days", "", 3, "log file reversed days")
+	// 控制台日志文字是否彩色
 	cmd.PersistentFlags().BoolVarP(&disableLogColor, "disable_log_color", "", false, "disable log color in console")
+	// 是否使用tls
 	cmd.PersistentFlags().BoolVarP(&tlsEnable, "tls_enable", "", false, "enable frpc tls")
 }
 
@@ -105,6 +114,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		// Do not show command usage here.
+		// 运行客户端
 		err := runClient(cfgFile)
 		if err != nil {
 			fmt.Println(err)
@@ -181,16 +191,19 @@ func parseClientCommonCfgFromCmd() (cfg config.ClientCommonConf, err error) {
 
 func runClient(cfgFilePath string) (err error) {
 	var content []byte
+	// 读取配置文件的内容
 	content, err = config.GetRenderedConfFromFile(cfgFilePath)
 	if err != nil {
 		return err
 	}
 
+	// 解析配置
 	cfg, err := parseClientCommonCfg(CfgFileTypeIni, content)
 	if err != nil {
 		return err
 	}
 
+	//
 	pxyCfgs, visitorCfgs, err := config.LoadAllProxyConfsFromIni(cfg.User, content, cfg.Start)
 	if err != nil {
 		return err
