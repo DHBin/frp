@@ -203,7 +203,7 @@ func runClient(cfgFilePath string) (err error) {
 		return err
 	}
 
-	//
+	// 解析生成代理配置、访问者配置
 	pxyCfgs, visitorCfgs, err := config.LoadAllProxyConfsFromIni(cfg.User, content, cfg.Start)
 	if err != nil {
 		return err
@@ -228,6 +228,7 @@ func startService(
 			s += ":53"
 		}
 		// Change default dns server for frpc
+		// 修改frpc内部的默认dns服务器
 		net.DefaultResolver = &net.Resolver{
 			PreferGo: true,
 			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
@@ -235,6 +236,7 @@ func startService(
 			},
 		}
 	}
+	// 创建服务
 	svr, errRet := client.NewService(cfg, pxyCfgs, visitorCfgs, cfgFile)
 	if errRet != nil {
 		err = errRet
@@ -242,11 +244,16 @@ func startService(
 	}
 
 	// Capture the exit signal if we use kcp.
+	// 如果使用kcp协议，启动捕捉退出信号，通知kcpDoneCh关闭程序
 	if cfg.Protocol == "kcp" {
 		go handleSignal(svr)
 	}
 
+	// 运行服务
 	err = svr.Run()
+
+	// 如果是使用kcp协议，用channel堵塞程序，等待handleSignal()中
+	// 执行close(kcpDoneCh)结束程序
 	if cfg.Protocol == "kcp" {
 		<-kcpDoneCh
 	}
