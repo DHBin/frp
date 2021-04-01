@@ -98,26 +98,42 @@ func NewControl(ctx context.Context, runID string, conn net.Conn, session *fmux.
 
 	// new xlog instance
 	ctl := &Control{
-		runID:              runID,
-		conn:               conn,
-		session:            session,
-		pxyCfgs:            pxyCfgs,
-		sendCh:             make(chan msg.Message, 100),
-		readCh:             make(chan msg.Message, 100),
-		closedCh:           make(chan struct{}),
-		closedDoneCh:       make(chan struct{}),
-		clientCfg:          clientCfg,
-		readerShutdown:     shutdown.New(),
-		writerShutdown:     shutdown.New(),
+		// 运行id
+		runID: runID,
+		// 与frps建立的链接
+		conn: conn,
+		// 如果使用tcp mux，这个不为空
+		session: session,
+		// 代理配置信息
+		pxyCfgs: pxyCfgs,
+		// 发送消息的队列
+		sendCh: make(chan msg.Message, 100),
+		// 接受消息的队列
+		readCh: make(chan msg.Message, 100),
+		// 关闭channel，用于堵塞程序，直到reader()结束
+		closedCh: make(chan struct{}),
+		// 关闭完成信号
+		closedDoneCh: make(chan struct{}),
+		// 客户端配置信息
+		clientCfg: clientCfg,
+		// 关闭接收者
+		readerShutdown: shutdown.New(),
+		// 关闭发送者
+		writerShutdown: shutdown.New(),
+		// 关闭信息处理者
 		msgHandlerShutdown: shutdown.New(),
-		serverUDPPort:      serverUDPPort,
-		xl:                 xlog.FromContextSafe(ctx),
-		ctx:                ctx,
-		authSetter:         authSetter,
+		// frps的udp端口
+		serverUDPPort: serverUDPPort,
+		xl:            xlog.FromContextSafe(ctx),
+		ctx:           ctx,
+		authSetter:    authSetter,
 	}
+	// 创建代理管理器
 	ctl.pm = proxy.NewManager(ctl.ctx, ctl.sendCh, clientCfg, serverUDPPort)
 
+	// 创建访问者管理器
 	ctl.vm = NewVisitorManager(ctl.ctx, ctl)
+	// 重载配置，包含启动访问者
 	ctl.vm.Reload(visitorCfgs)
 	return ctl
 }

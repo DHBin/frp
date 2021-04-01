@@ -28,6 +28,7 @@ import (
 // ClientCommonConf contains information for a client service. It is
 // recommended to use GetDefaultClientConf instead of creating this object
 // directly, so that all unspecified fields have reasonable default values.
+// 客户端配置信息
 type ClientCommonConf struct {
 	auth.ClientConfig `ini:",extends"`
 
