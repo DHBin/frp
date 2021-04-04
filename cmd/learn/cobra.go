@@ -14,9 +14,6 @@ var rootCommand = &cobra.Command{
 	},
 }
 
-func main() {
-	err := rootCommand.Execute()
-	if err != nil {
-		panic(err)
-	}
+func Cobra() {
+	_ = rootCommand.Execute()
 }
