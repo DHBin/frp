@@ -100,6 +100,7 @@ func (svr *Service) Run() error {
 	// login to frps
 	for {
 		conn, session, err := svr.login()
+		// 如果登录失败不断重试
 		if err != nil {
 			xl.Warn("login to server failed: %v", err)
 
@@ -111,6 +112,7 @@ func (svr *Service) Run() error {
 			time.Sleep(10 * time.Second)
 		} else {
 			// login success
+			// 创建控制器
 			ctl := NewControl(svr.ctx, svr.runID, conn, session, svr.cfg, svr.pxyCfgs, svr.visitorCfgs, svr.serverUDPPort, svr.authSetter)
 			ctl.Run()
 			svr.ctlMu.Lock()
